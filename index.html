@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LifeTracker">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>LifeTracker</title>
+<style>
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a28;--card:#16161f;--card2:#1e1e2e;
+  --border:#2a2a3d;--accent:#6c63ff;--accent2:#8b85ff;--aglow:rgba(108,99,255,.15);
+  --green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;--purple:#a855f7;--teal:#14b8a6;--orange:#f97316;
+  --text:#e2e2f0;--text2:#9090b0;--text3:#5a5a7a;
+  --r:14px;--rs:8px;--rl:20px;--sh:0 4px 24px rgba(0,0,0,.4);
+  --nh:60px;--sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',system-ui,sans-serif;overflow:hidden}
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.page{display:none;flex:1;overflow-y:auto;padding-bottom:calc(var(--nh) + var(--sb) + 4px)}
+.page.active{display:block}
+::-webkit-scrollbar{width:0}
+nav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nh) + var(--sb));padding-bottom:var(--sb);background:rgba(18,18,26,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-around;z-index:100;padding-top:8px}
+.nb{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 8px;border-radius:var(--rs);transition:color .2s;min-width:44px}
+.nb.active{color:var(--accent)}
+.nb .ni{font-size:20px;line-height:1;transition:transform .2s}
+.nb .nl{font-size:9px;font-weight:500}
+.nb.active .ni{transform:scale(1.12)}
+.ph{padding:52px 16px 10px;background:var(--bg);position:sticky;top:0;z-index:10}
+.pt{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.ps{font-size:12px;color:var(--text2);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin:0 16px 10px}
+.ct{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 16px 10px}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:3px}
+.ml{font-size:9px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.mv{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1}
+.msb{font-size:10px;color:var(--text2)}
+.pb{height:5px;background:var(--bg3);border-radius:99px;overflow:hidden;margin-top:4px}
+.pf{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:10px 16px;border-radius:var(--rs);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:active{background:var(--accent2);transform:scale(.97)}
+.btn-g{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-g:active{background:var(--border)}
+.btn-d{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-f{width:100%}
+.fab{position:fixed;bottom:calc(var(--nh) + var(--sb) + 14px);right:16px;width:50px;height:50px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.45);display:flex;align-items:center;justify-content:center;transition:transform .2s;z-index:90}
+.fab:active{transform:scale(.9)}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.md{background:var(--bg2);border-radius:var(--rl) var(--rl) 0 0;width:100%;max-width:540px;max-height:93vh;overflow-y:auto;animation:su .28s cubic-bezier(.34,1.2,.64,1);border:1px solid var(--border);border-bottom:none}
+@keyframes su{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.mh{padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.mt2{font-size:15px;font-weight:700}
+.mc2{background:var(--bg3);border:none;color:var(--text2);font-size:17px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.mb{padding:16px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--rs);padding:11px 13px;font-size:14px;outline:none;transition:border-color .2s;font-family:inherit}
+.fi:focus{border-color:var(--accent)}
+select.fi{appearance:none}
+textarea.fi{resize:vertical;min-height:70px}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 20px;border-radius:99px;font-size:12px;font-weight:500;z-index:999;white-space:nowrap;box-shadow:var(--sh);transition:transform .28s cubic-bezier(.34,1.56,.64,1)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.streak{display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.14);color:var(--yellow);padding:3px 9px;border-radius:99px;font-size:12px;font-weight:700}
+.bal{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;font-size:13px;font-weight:700}
+.bal-p{background:rgba(34,197,94,.14);color:var(--green)}
+.bal-n{background:rgba(239,68,68,.14);color:var(--red)}
+.bal-0{background:var(--aglow);color:var(--accent)}
+.empty{text-align:center;padding:32px 20px;color:var(--text2)}
+.empty-i{font-size:36px;margin-bottom:10px}
+.empty-t{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.empty-s{font-size:12px;line-height:1.5}
+.tabs{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;flex-shrink:0}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.num-row{display:flex;align-items:center;gap:8px}
+.num-btn{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.num-btn:active{background:var(--border)}
+.macro-row{display:flex;gap:6px;margin-top:8px}
+.macro{flex:1;text-align:center;background:var(--bg3);border-radius:var(--rs);padding:6px 4px}
+.macro-v{font-size:14px;font-weight:700}
+.macro-l{font-size:9px;color:var(--text2);margin-top:1px}
+.meal-h{display:flex;justify-content:space-between;padding:7px 16px 4px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.li{display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);margin:0 16px 6px}
+.lic{font-size:20px;width:30px;text-align:center;flex-shrink:0}
+.lin{font-size:13px;font-weight:500}
+.lim{font-size:10px;color:var(--text2);margin-top:1px}
+.lical{font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+.ldel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:3px;flex-shrink:0}
+.sec-label{padding:6px 16px 4px;font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.qb{display:flex;align-items:center;gap:9px;padding:10px 13px;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;width:100%;text-align:left;color:var(--text);font-size:13px;transition:background .15s}
+.qb:active{background:var(--bg3)}
+.qbi{font-size:17px;width:26px;text-align:center}
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 16px 8px}
+.cdh{text-align:center;font-size:9px;color:var(--text3);font-weight:600;padding-bottom:4px;text-transform:uppercase}
+.cd{aspect-ratio:1;border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:all .15s;position:relative;border:1px solid transparent}
+.cd.today{border-color:var(--accent);color:var(--accent);font-weight:700}
+.cd.selected{background:var(--accent);color:#fff}
+.cd.has-ev::after{content:'';position:absolute;bottom:2px;width:4px;height:4px;background:var(--accent);border-radius:50%}
+.cd.selected::after{background:#fff}
+.cd.other{color:var(--text3)}
+.cev{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin:0 16px 7px}
+.cev-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.cev-body{flex:1;min-width:0}
+.cev-title{font-size:13px;font-weight:600}
+.cev-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.cev-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s}
+.cev-check.done{background:var(--green);border-color:var(--green);color:#fff}
+.cev-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px;flex-shrink:0}
+/* HABITS */
+.hi{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin:0 16px 7px}
+.hck{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:all .2s}
+.hck.done{background:var(--green);border-color:var(--green);color:#fff}
+.hcat{font-size:9px;padding:2px 7px;border-radius:99px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+.c-s{background:rgba(34,197,94,.14);color:var(--green)}
+.c-d{background:rgba(59,130,246,.14);color:var(--blue)}
+.c-p{background:rgba(168,85,247,.14);color:var(--purple)}
+.c-h{background:rgba(245,158,11,.14);color:var(--yellow)}
+/* FOOD */
+.fi2{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.fi2:active{background:var(--bg3)}
+.fi2:last-child{border-bottom:none}
+.fn{font-size:13px;font-weight:500}
+.fu{font-size:10px;color:var(--text2);margin-top:1px}
+.fca{font-size:12px;color:var(--accent);font-weight:700}
+.fp{font-size:10px;color:var(--text2);margin-top:1px;text-align:right}
+.fnote{font-size:10px;color:var(--teal);margin-top:2px;font-style:italic}
+/* GYM */
+.routine-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin:0 16px 10px;overflow:hidden}
+.routine-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.routine-title{font-size:14px;font-weight:700}
+.routine-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.routine-actions{display:flex;gap:6px;align-items:center}
+.mg-section{border-top:1px solid var(--border);padding:10px 14px}
+.mg-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.mg-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.ex-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.ex-row:last-child{border-bottom:none}
+.ex-name{flex:1;font-size:12px;font-weight:500}
+.ex-sets{font-size:11px;color:var(--text2);flex-shrink:0}
+.ex-weight{font-size:10px;color:var(--accent);flex-shrink:0}
+/* exercise builder */
+.ex-builder{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:8px}
+.ex-builder-row{display:flex;gap:6px;align-items:flex-start;margin-bottom:6px}
+.ex-builder-row:last-child{margin-bottom:0}
+.mg-builder{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.mg-builder-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.insight{border-radius:var(--r);padding:12px 14px;margin:0 16px 9px;border-left:3px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.ins-s{background:rgba(34,197,94,.08);border-color:var(--green)}
+.ins-w{background:rgba(245,158,11,.08);border-color:var(--yellow)}
+.ins-i{background:rgba(59,130,246,.08);border-color:var(--blue)}
+.ins-t{background:var(--aglow);border-color:var(--accent)}
+.ins-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.ins-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.ins-msg{font-size:11px;color:var(--text2);line-height:1.5}
+.ring-svg{transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--bg3)}
+.ring-fill{fill:none;stroke-linecap:round}
+.ring-text{text-anchor:middle;dominant-baseline:middle;fill:var(--text);font-weight:800}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="page active" id="page-home"></div>
+  <div class="page" id="page-calendar"></div>
+  <div class="page" id="page-nutrition"></div>
+  <div class="page" id="page-gym"></div>
+  <div class="page" id="page-habits"></div>
+  <nav>
+    <button class="nb active" data-page="home" onclick="nav('home')"><span class="ni">📊</span><span class="nl">Hoy</span></button>
+    <button class="nb" data-page="calendar" onclick="nav('calendar')"><span class="ni">📅</span><span class="nl">Semana</span></button>
+    <button class="nb" data-page="nutrition" onclick="nav('nutrition')"><span class="ni">🍽️</span><span class="nl">Comida</span></button>
+    <button class="nb" data-page="gym" onclick="nav('gym')"><span class="ni">🏋️</span><span class="nl">Gym</span></button>
+    <button class="nb" data-page="habits" onclick="nav('habits')"><span class="ni">✅</span><span class="nl">Hábitos</span></button>
+  </nav>
+</div>
+<div class="mo" id="overlay" onclick="if(event.target===this)closeModal()"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── GLOBALS ─────────────────────────────────────────────────────────────────
+const todayStr = new Date().toISOString().split('T')[0];
+let curPage = 'home';
+let calWeekStart = null;
+let calSelDate = todayStr;
+let calEvents = [];
+let selMeal = 'almuerzo';
+let selFoodId = null, selFoodData = null;
+let foodSearchTm;
+let pickedColor = '#6c63ff';
+// gym builder state
+let builderGroups = []; // [{name, color, exercises:[{name,sets,reps,weight,rest_seconds,notes}]}]
+let editRoutineId = null;
+
+// ── NAV ─────────────────────────────────────────────────────────────────────
+function nav(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector('[data-page="' + page + '"]').classList.add('active');
+  curPage = page;
+  ({home:renderHome, calendar:renderCalendar, nutrition:renderNutrition, gym:renderGym, habits:renderHabits})[page]?.();
+}
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const r = await fetch('/api' + path, { headers: {'Content-Type':'application/json'}, ...opts });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, ms = 2200) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(html, title = '') {
+  const ov = document.getElementById('overlay');
+  ov.innerHTML = `<div class="md"><div class="mh"><span class="mt2">${title}</span><button class="mc2" onclick="closeModal()">✕</button></div><div class="mb">${html}</div></div>`;
+  ov.classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function ring(pct, size = 80, color = '#6c63ff') {
+  const r = (size-10)/2, c = 2*Math.PI*r, d = c*Math.min(pct,100)/100;
+  return `<svg width="${size}" height="${size}" class="ring-svg"><circle class="ring-track" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="8"/><circle class="ring-fill" cx="${size/2}" cy="${size/2}" r="${r}" stroke="${color}" stroke-width="8" stroke-dasharray="${d} ${c}"/><text class="ring-text" x="${size/2}" y="${size/2}" font-size="15">${pct}%</text></svg>`;
+}
+function fmtDate(s) { return new Date(s+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}); }
+function addDays(s, n) { const d = new Date(s+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
+function getWeekStart(s) { const d = new Date(s+'T12:00:00'), wd = d.getDay(), diff = wd===0?-6:1-wd; d.setDate(d.getDate()+diff); return d.toISOString().split('T')[0]; }
+function adjustNum(id, delta, min = 0) { const el = document.getElementById(id); if(el) el.value = Math.max(min, (parseFloat(el.value)||0) + delta); }
+function selectChip(gid, el) { document.querySelectorAll('#'+gid+' .chip').forEach(c => c.classList.remove('sel')); el.classList.add('sel'); }
+function pickColor(c, el) { pickedColor = c; document.querySelectorAll('#color-picks div').forEach(d => d.style.borderColor='transparent'); el.style.borderColor='#fff'; }
+
+// ── HOME ─────────────────────────────────────────────────────────────────────
+async function renderHome() {
+  const p = document.getElementById('page-home');
+  p.innerHTML = '<div class="ph"><div class="pt" style="color:var(--accent)">⟳</div></div>';
+  try {
+    const d = await api('/dashboard/today');
+    const h = new Date().getHours();
+    const greet = h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+    const ci = d.nutrition.calories_consumed, co = d.activity.calories_burned;
+    const bal = d.calorie_balance, tgt = d.nutrition.daily_target;
+    let bc = 'bal-0';
+    if(bal.vs_target > 100) bc = 'bal-p';
+    else if(bal.vs_target < -100) bc = 'bal-n';
+    p.innerHTML = `
+    <div class="ph" style="padding-top:50px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div style="font-size:11px;color:var(--text2)">${greet}</div><div class="pt">${d.profile.name||'LifeTracker'}</div></div>
+        <button class="btn btn-g btn-sm" onclick="openProfileModal()">⚙️</button>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="streak">🔥 ${d.habits.streak} días</span>
+        <span style="font-size:11px;color:var(--text2)">${fmtDate(todayStr)}</span>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      ${ring(d.habits.daily_pct, 86)}
+      <div style="flex:1">
+        <div class="ct" style="margin-bottom:5px">Hábitos hoy</div>
+        <div style="font-size:20px;font-weight:800">${d.habits.completed}<span style="font-size:13px;color:var(--text2);font-weight:400"> / ${d.habits.total}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:var(--text2)">Esta semana</span><span style="font-size:10px;font-weight:700">${d.habits.weekly_pct}%</span></div>
+        <div class="pb"><div class="pf" style="width:${d.habits.weekly_pct}%;background:var(--accent)"></div></div>
+      </div>
+    </div>
+    <div class="mg">
+      <div class="mc"><div style="font-size:18px">🍽️</div><div class="ml">Consumido</div><div class="mv" style="color:var(--yellow)">${Math.round(ci)}</div><div class="msb">kcal · meta ${tgt}</div></div>
+      <div class="mc"><div style="font-size:18px">🔥</div><div class="ml">Quemado</div><div class="mv" style="color:var(--blue)">${Math.round(co)}</div><div class="msb">kcal · ${d.activity.active_minutes} min</div></div>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="ct" style="margin-bottom:3px">Balance neto</div><div style="font-size:22px;font-weight:800">${Math.round(bal.net)} <span style="font-size:12px;color:var(--text2)">kcal</span></div></div>
+      <span class="bal ${bc}">${bal.status==='superávit'?'↑':bal.status==='déficit'?'↓':'='} ${Math.abs(Math.round(bal.vs_target))} vs meta</span>
+    </div>
+    <div class="sec-label">Acceso rápido</div>
+    <div style="padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <button class="qb" onclick="nav('calendar')"><span class="qbi">📅</span>Ver semana</button>
+      <button class="qb" onclick="nav('nutrition')"><span class="qbi">🍽️</span>Registrar comida</button>
+      <button class="qb" onclick="openAddActivityModal()"><span class="qbi">🏃</span>Registrar ejercicio</button>
+      <button class="qb" onclick="nav('gym')"><span class="qbi">🏋️</span>Mis rutinas</button>
+    </div>
+    ${d.weight.current ? `<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><div class="ct" style="margin-bottom:3px">Peso actual</div><div style="font-size:28px;font-weight:800">${d.weight.current}<span style="font-size:13px;color:var(--text2)"> kg</span></div></div>
+      ${d.weight.change!==null?`<span class="bal ${d.weight.change>0?'bal-p':d.weight.change<0?'bal-n':'bal-0'}">${d.weight.change>0?'+':''}${d.weight.change} kg</span>`:''}
+      <button class="btn btn-g btn-sm" onclick="openWeightModal()">⚖️</button>
+    </div>` : `<div style="padding:0 16px 10px"><button class="btn btn-g btn-f" onclick="openWeightModal()">⚖️ Registrar peso</button></div>`}`;
+  } catch(e) {
+    p.innerHTML = '<div class="empty"><div class="empty-i">⚠️</div><div class="empty-t">Sin conexión al servidor</div><div class="empty-s">Asegúrate que el servidor esté corriendo y recarga.</div></div>';
+  }
+}
+
+async function openProfileModal() {
+  const pf = await api('/profile/');
+  openModal(`
+    <div class="fg"><label class="fl">Nombre</label><input class="fi" id="pf-n" value="${pf.name||''}"></div>
+    <div class="fg"><label class="fl">Peso (kg)</label><input class="fi" type="number" id="pf-w" value="${pf.weight||''}" step="0.1"></div>
+    <div class="fg"><label class="fl">Altura (cm)</label><input class="fi" type="number" id="pf-h" value="${pf.height||''}"></div>
+    <div class="fg"><label class="fl">Objetivo</label><select class="fi" id="pf-g">
+      <option value="gain" ${pf.goal==='gain'?'selected':''}>Subir masa muscular</option>
+      <option value="lose" ${pf.goal==='lose'?'selected':''}>Bajar grasa</option>
+      <option value="maintain" ${pf.goal==='maintain'?'selected':''}>Mantener</option>
+    </select></div>
+    <div class="fg"><label class="fl">Meta calórica diaria (kcal)</label><input class="fi" type="number" id="pf-c" value="${pf.daily_calorie_target||2200}"></div>
+    <button class="btn btn-p btn-f" onclick="saveProfile()">💾 Guardar</button>
+  `, '⚙️ Perfil');
+}
+async function saveProfile() {
+  await api('/profile/', {method:'PUT', body:JSON.stringify({
+    name: document.getElementById('pf-n').value,
+    weight: parseFloat(document.getElementById('pf-w').value)||undefined,
+    height: parseFloat(document.getElementById('pf-h').value)||undefined,
+    goal: document.getElementById('pf-g').value,
+    daily_calorie_target: parseInt(document.getElementById('pf-c').value)||2200
+  })});
+  closeModal(); toast('✅ Perfil guardado'); renderHome();
+}
+function openWeightModal() {
+  openModal(`<div class="fg"><label class="fl">Peso actual (kg)</label><input class="fi" type="number" id="wt" step="0.1" placeholder="70.5" style="font-size:22px;font-weight:800;text-align:center"></div><button class="btn btn-p btn-f" onclick="saveWeight()">💾 Guardar</button>`, '⚖️ Peso');
+}
+async function saveWeight() {
+  const w = parseFloat(document.getElementById('wt').value);
+  if(!w) return toast('Ingresa un peso');
+  await api('/profile/', {method:'PUT', body:JSON.stringify({weight:w})});
+  closeModal(); toast('✅ Peso guardado'); renderHome();
+}
+
+// ── ACTIVITY MODAL (quick log) ────────────────────────────────────────────────
+const SPORTS_LIST = ['Fútbol','Pádel','Tenis','Pesas','Gimnasio','Crossfit','Natación','Ciclismo','Trotar','Correr','Caminar','Básquetbol','Yoga'];
+function openAddActivityModal() {
+  openModal(`
+    <div class="fg"><label class="fl">Actividad</label>
+      <div class="chips" style="margin-bottom:8px" id="sport-chips">
+        ${SPORTS_LIST.map((s,i)=>`<button class="chip ${i===0?'sel':''}" onclick="selectChip('sport-chips',this);document.getElementById('act-name').value='${s.toLowerCase()}'">${s}</button>`).join('')}
+      </div>
+      <input class="fi" id="act-name" value="fútbol" placeholder="o escribe otra...">
+    </div>
+    <div class="fg"><label class="fl">Duración (min)</label>
+      <div class="num-row"><button class="num-btn" onclick="adjustNum('act-dur',-5,5)">−</button><input class="fi" type="number" id="act-dur" value="60" style="text-align:center;font-size:20px;font-weight:700"><button class="num-btn" onclick="adjustNum('act-dur',5)">+</button></div>
+    </div>
+    <div class="fg"><label class="fl">Intensidad</label>
+      <div class="chips" id="int-chips">
+        <button class="chip" onclick="selectChip('int-chips',this)">Baja</button>
+        <button class="chip sel" onclick="selectChip('int-chips',this)">Moderada</button>
+        <button class="chip" onclick="selectChip('int-chips',this)">Alta</button>
+        <button class="chip" onclick="selectChip('int-chips',this)">Máxima</button>
+      </div>
+    </div>
+    <button class="btn btn-p btn-f" onclick="saveActivity()">🔥 Registrar</button>
+  `, '💪 Registrar ejercicio');
+}
+async function saveActivity() {
+  const name = document.getElementById('act-name').value.trim();
+  if(!name) return toast('Ingresa una actividad');
+  await api('/activity/log', {method:'POST', body:JSON.stringify({
+    activity_name: name,
+    duration_minutes: parseInt(document.getElementById('act-dur').value)||60,
+    intensity: document.querySelector('#int-chips .chip.sel')?.textContent?.toLowerCase()||'moderada',
+    date: todayStr
+  })});
+  closeModal(); toast('✅ Ejercicio registrado'); if(curPage==='home') renderHome();
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────────
+async function renderCalendar() {
+  if(!calWeekStart) calWeekStart = getWeekStart(todayStr);
+  const p = document.getElementById('page-calendar');
+  p.innerHTML = `<div class="ph"><div class="pt">Semana</div><div class="ps" id="cal-range"></div></div><div id="cal-body"></div><button class="fab" onclick="openAddEventModal()">+</button>`;
+  await loadCalendar();
+}
+async function loadCalendar() {
+  const ws = calWeekStart, we = addDays(ws,6);
+  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('es-CL',{day:'numeric',month:'short'});
+  const rEl = document.getElementById('cal-range');
+  if(rEl) rEl.textContent = `${fmt(ws)} – ${fmt(we)} ${new Date(we+'T12:00:00').getFullYear()}`;
+  calEvents = await api(`/calendar/events?start=${ws}&end=${we}`);
+  const evMap = {};
+  calEvents.forEach(e => { if(!evMap[e.date]) evMap[e.date]=[]; evMap[e.date].push(e); });
+  const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let html = `<div class="cal-nav">
+    <button class="btn btn-g btn-sm" onclick="shiftWeek(-1)">‹ Ant.</button>
+    <button class="btn btn-g btn-sm" onclick="goToday()">Hoy</button>
+    <button class="btn btn-g btn-sm" onclick="shiftWeek(1)">Sig. ›</button>
+  </div>
+  <div class="cal-grid">
+    ${DAYS.map(d=>`<div class="cdh">${d}</div>`).join('')}
+    ${Array.from({length:7},(_,i)=>{
+      const ds = addDays(ws,i), day = new Date(ds+'T12:00:00').getDate();
+      const isTd = ds===todayStr, isSel = ds===calSelDate, hasEv=(evMap[ds]||[]).length>0;
+      return `<div class="cd ${isTd?'today':''} ${isSel?'selected':''} ${hasEv?'has-ev':''}" onclick="selectCalDay('${ds}')">${day}</div>`;
+    }).join('')}
+  </div>`;
+
+  const selEvs = evMap[calSelDate]||[];
+  const selLabel = new Date(calSelDate+'T12:00:00').toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+  const plannedCal = selEvs.filter(e=>e.type==='activity').reduce((s,e)=>s+(e.estimated_calories||0),0);
+  const doneCount = selEvs.filter(e=>e.completed).length;
+  const actCount = selEvs.filter(e=>e.type==='activity').length;
+
+  html += `<div style="padding:8px 16px 5px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:13px;font-weight:700;text-transform:capitalize">${selLabel}</div>
+    ${actCount>0?`<div style="font-size:11px;color:var(--text2)">✅ ${doneCount}/${actCount}</div>`:''}
+  </div>`;
+
+  if(plannedCal>0) html += `<div class="mg" style="margin-bottom:6px"><div class="mc"><div class="ml">🔥 Kcal planificadas</div><div class="mv" style="font-size:20px;color:var(--blue)">${Math.round(plannedCal)}</div><div class="msb">ejercicio del día</div></div></div>`;
+
+  if(!selEvs.length) {
+    html += '<div class="empty" style="padding:20px"><div class="empty-i">📅</div><div class="empty-t">Sin eventos</div><div class="empty-s">Toca + para agregar clases, actividades o rutinas</div></div>';
+  } else {
+    const classes = selEvs.filter(e=>e.type==='class').sort((a,b)=>(a.time_start||'').localeCompare(b.time_start||''));
+    const acts = selEvs.filter(e=>e.type==='activity'||e.type==='gym');
+    const others = selEvs.filter(e=>e.type==='other');
+    if(classes.length) { html += '<div class="sec-label">📚 Clases</div>'; classes.forEach(e => html += calEventHtml(e)); }
+    if(acts.length) { html += '<div class="sec-label">🏃 Actividades</div>'; acts.forEach(e => html += calEventHtml(e)); }
+    if(others.length) { others.forEach(e => html += calEventHtml(e)); }
+  }
+  const bodyEl = document.getElementById('cal-body');
+  if(bodyEl) bodyEl.innerHTML = html;
+}
+function calEventHtml(e) {
+  const done = e.completed, color = e.color||'#6c63ff';
+  let meta = '';
+  if(e.type==='class') meta = `${e.time_start||''}${e.time_end?' – '+e.time_end:''}`;
+  else if(e.type==='activity'||e.type==='gym') {
+    meta = `${e.duration_minutes||0} min`;
+    if(e.estimated_calories) meta += ` · ~${Math.round(e.estimated_calories)} kcal`;
+  }
+  const id = e.id;
+  return `<div class="cev" style="${done?'opacity:.55':''}">
+    <div class="cev-dot" style="background:${color}"></div>
+    <div class="cev-body">
+      <div class="cev-title" style="${done?'text-decoration:line-through':''}">${e.title}</div>
+      ${meta?`<div class="cev-meta">${meta}</div>`:''}
+      ${e.notes?`<div class="cev-meta" style="color:var(--text3)">${e.notes}</div>`:''}
+    </div>
+    ${(e.type==='activity'||e.type==='gym')?`<button class="cev-check ${done?'done':''}" onclick="toggleCalEvent(${id})">${done?'✓':''}</button>`:''}
+    <button class="cev-del" onclick="deleteCalEvent(${id})">✕</button>
+  </div>`;
+}
+function selectCalDay(ds) { calSelDate=ds; loadCalendar(); }
+function shiftWeek(n) { calWeekStart=addDays(calWeekStart,n*7); loadCalendar(); }
+function goToday() { calWeekStart=getWeekStart(todayStr); calSelDate=todayStr; loadCalendar(); }
+async function toggleCalEvent(id) { await api('/calendar/events/'+id+'/complete',{method:'PATCH'}); await loadCalendar(); }
+async function deleteCalEvent(id) { await api('/calendar/events/'+id,{method:'DELETE'}); toast('Eliminado'); await loadCalendar(); }
+
+async function openAddEventModal() {
+  // Load routines for gym option
+  let routines = [];
+  try { routines = await api('/gym/routines'); } catch(e){}
+  openModal(`
+    <div class="fg"><label class="fl">Tipo</label>
+      <div class="chips" id="ev-type-chips">
+        <button class="chip sel" onclick="evTypeSwitch('activity',this)">🏃 Deporte</button>
+        <button class="chip" onclick="evTypeSwitch('gym',this)">🏋️ Rutina gym</button>
+        <button class="chip" onclick="evTypeSwitch('class',this)">📚 Clase</button>
+        <button class="chip" onclick="evTypeSwitch('other',this)">📌 Otro</button>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="ev-date" value="${calSelDate}"></div>
+
+    <div id="ev-activity-fields">
+      <div class="fg"><label class="fl">Actividad</label>
+        <div class="chips" style="margin-bottom:6px" id="ev-sport-chips">
+          ${['Fútbol','Pádel','Tenis','Trotar','Ciclismo','Natación'].map(s=>`<button class="chip" onclick="selectChip('ev-sport-chips',this);document.getElementById('ev-title').value='${s}';document.getElementById('ev-act').value='${s.toLowerCase()}'">${s}</button>`).join('')}
+        </div>
+        <input class="fi" id="ev-title" placeholder="Título del evento">
+        <input class="fi" id="ev-act" placeholder="actividad para calcular kcal" style="margin-top:6px">
+      </div>
+      <div class="fg"><label class="fl">Duración (min)</label>
+        <div class="num-row"><button class="num-btn" onclick="adjustNum('ev-dur',−15,15)">−</button><input class="fi" type="number" id="ev-dur" value="60" style="text-align:center;font-size:18px;font-weight:700"><button class="num-btn" onclick="adjustNum('ev-dur',15)">+</button></div>
+      </div>
+    </div>
+
+    <div id="ev-gym-fields" style="display:none">
+      ${routines.length ? `
+      <div class="fg"><label class="fl">Selecciona una rutina</label>
+        <select class="fi" id="ev-routine-sel" onchange="onRoutineSel(this.value)">
+          <option value="">— elige una rutina —</option>
+          ${routines.map(r=>`<option value="${r.id}" data-name="${r.name}" data-dur="${r.estimated_duration||60}">${r.name} · ${r.total_exercises} ejercicios</option>`).join('')}
+        </select>
+      </div>` : `<div class="fg" style="color:var(--text2);font-size:13px;padding:8px 0">Aún no tienes rutinas. Créalas en la sección 🏋️ Gym primero.</div>`}
+      <input class="fi" id="ev-title" placeholder="Título (se completa automático)" style="margin-bottom:8px">
+      <div class="fg"><label class="fl">Duración (min)</label>
+        <div class="num-row"><button class="num-btn" onclick="adjustNum('ev-dur',−5,5)">−</button><input class="fi" type="number" id="ev-dur" value="60" style="text-align:center;font-size:18px;font-weight:700"><button class="num-btn" onclick="adjustNum('ev-dur',5)">+</button></div>
+      </div>
+    </div>
+
+    <div id="ev-class-fields" style="display:none">
+      <div class="fg"><label class="fl">Nombre de la clase / materia</label><input class="fi" id="ev-title" placeholder="ej: Matemáticas, Historia, Inglés..."></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Hora inicio</label><input class="fi" type="time" id="ev-ts" value="08:00"></div>
+        <div class="fg"><label class="fl">Hora fin</label><input class="fi" type="time" id="ev-te" value="09:30"></div>
+      </div>
+    </div>
+
+    <div id="ev-other-fields" style="display:none">
+      <div class="fg"><label class="fl">Título</label><input class="fi" id="ev-title" placeholder="ej: Médico, Reunión..."></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="fg"><label class="fl">Hora inicio</label><input class="fi" type="time" id="ev-ts" value="10:00"></div>
+        <div class="fg"><label class="fl">Hora fin</label><input class="fi" type="time" id="ev-te" value="11:00"></div>
+      </div>
+    </div>
+
+    <div class="fg"><label class="fl">Color</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="color-picks">
+        ${['#6c63ff','#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7','#14b8a6','#f97316'].map((c,i)=>`<div style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${i===0?'#fff':'transparent'}" onclick="pickColor('${c}',this)"></div>`).join('')}
+      </div>
+    </div>
+    <div class="fg"><label class="fl">¿Se repite semanalmente?</label>
+      <div class="chips" id="rec-chips">
+        <button class="chip sel" data-v="none" onclick="selectChip('rec-chips',this);document.getElementById('rec-days-wrap').style.display='none'">No</button>
+        <button class="chip" data-v="weekly" onclick="selectChip('rec-chips',this);document.getElementById('rec-days-wrap').style.display='block'">Sí, cada semana</button>
+      </div>
+    </div>
+    <div id="rec-days-wrap" style="display:none" class="fg">
+      <label class="fl">¿Qué días?</label>
+      <div class="chips" id="rec-day-chips">
+        ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((d,i)=>`<button class="chip" onclick="this.classList.toggle('sel')" data-v="${i}">${d}</button>`).join('')}
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Notas (opcional)</label><input class="fi" id="ev-notes" placeholder="sala, cancha, detalles..."></div>
+    <button class="btn btn-p btn-f" onclick="saveCalEvent()">📅 Agregar al calendario</button>
+  `, '📅 Nuevo evento');
+  pickedColor = '#6c63ff';
+}
+
+let evType = 'activity';
+function evTypeSwitch(type, el) {
+  evType = type;
+  document.querySelectorAll('#ev-type-chips .chip').forEach(c=>c.classList.remove('sel')); el.classList.add('sel');
+  ['activity','gym','class','other'].forEach(t => {
+    const f = document.getElementById('ev-'+t+'-fields');
+    if(f) f.style.display = t===type?'block':'none';
+  });
+  // hide duplicate title fields – each section has its own
+}
+function onRoutineSel(val) {
+  if(!val) return;
+  const opt = document.querySelector(`#ev-routine-sel option[value="${val}"]`);
+  if(opt) {
+    const tf = document.getElementById('ev-title'); if(tf) tf.value = opt.dataset.name;
+    const df = document.getElementById('ev-dur'); if(df) df.value = opt.dataset.dur;
+  }
+}
+async function saveCalEvent() {
+  const date = document.getElementById('ev-date')?.value || calSelDate;
+  const titleEl = document.getElementById('ev-title');
+  const title = titleEl?.value?.trim();
+  if(!title) return toast('Ingresa un título');
+  const rec = document.querySelector('#rec-chips .chip.sel')?.dataset?.v || 'none';
+  const recDays = [...document.querySelectorAll('#rec-day-chips .chip.sel')].map(b=>b.dataset.v).join(',');
+  const payload = { date, title, type: evType, color: pickedColor, notes: document.getElementById('ev-notes')?.value||'', recurring: rec, recurring_days: recDays };
+  if(evType==='activity') {
+    payload.activity_name = (document.getElementById('ev-act')?.value||title).toLowerCase();
+    payload.duration_minutes = parseInt(document.getElementById('ev-dur')?.value)||60;
+  } else if(evType==='gym') {
+    payload.activity_name = 'pesas';
+    payload.duration_minutes = parseInt(document.getElementById('ev-dur')?.value)||60;
+    const sel = document.getElementById('ev-routine-sel');
+    if(sel?.value) payload.routine_id = parseInt(sel.value);
+  } else if(evType==='class'||evType==='other') {
+    payload.time_start = document.getElementById('ev-ts')?.value;
+    payload.time_end = document.getElementById('ev-te')?.value;
+  }
+  await api('/calendar/events', {method:'POST', body:JSON.stringify(payload)});
+  closeModal(); toast('✅ Evento agregado'); await loadCalendar();
+}
+
+// ── NUTRITION ─────────────────────────────────────────────────────────────────
+async function renderNutrition() {
+  const p = document.getElementById('page-nutrition');
+  p.innerHTML = `<div class="ph"><div class="pt">Comida</div><div class="ps">${fmtDate(todayStr)}</div></div><div id="nut-content"><div class="empty"><div>⏳</div></div></div><button class="fab" onclick="openAddFood()">+</button>`;
+  await loadNutrition();
+}
+async function loadNutrition() {
+  const [data, pf] = await Promise.all([api('/nutrition/log/'+todayStr), api('/profile/')]);
+  const tgt = (pf.daily_calorie_target||2200) + (pf.calorie_adjustment||0);
+  const pct = Math.min(100, Math.round(data.total_calories/tgt*100));
+  const meals = ['desayuno','almuerzo','cena','snack'];
+  const mealL = {desayuno:'🌅 Desayuno', almuerzo:'☀️ Almuerzo', cena:'🌙 Cena', snack:'🍎 Snack'};
+  const byMeal = {};
+  (data.items||[]).forEach(i => { const m=i.meal_type||'almuerzo'; if(!byMeal[m]) byMeal[m]=[]; byMeal[m].push(i); });
+  let html = `<div class="card">
+    <div class="ct">Hoy</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div><div style="font-size:28px;font-weight:800">${Math.round(data.total_calories)}<span style="font-size:12px;color:var(--text2);font-weight:400"> kcal</span></div>
+      <div style="font-size:11px;color:var(--text2)">Meta ${tgt} · Resto ${Math.round(tgt-data.total_calories)}</div></div>
+      <div style="font-size:12px;font-weight:700;color:var(--accent)">${pct}%</div>
+    </div>
+    <div class="pb"><div class="pf" style="width:${pct}%;background:${pct>100?'var(--red)':pct>75?'var(--yellow)':'var(--green)'}"></div></div>
+    <div class="macro-row">
+      <div class="macro"><div class="macro-v" style="color:var(--blue)">${Math.round(data.total_protein)}g</div><div class="macro-l">Proteína</div></div>
+      <div class="macro"><div class="macro-v" style="color:var(--yellow)">${Math.round(data.total_carbs)}g</div><div class="macro-l">Carbos</div></div>
+      <div class="macro"><div class="macro-v" style="color:var(--red)">${Math.round(data.total_fat)}g</div><div class="macro-l">Grasa</div></div>
+    </div>
+  </div>`;
+  if(!(data.items||[]).length) {
+    html += '<div class="empty"><div class="empty-i">🍽️</div><div class="empty-t">Sin registros</div><div class="empty-s">Toca + para agregar lo que comiste</div></div>';
+  } else {
+    meals.forEach(meal => {
+      const items = byMeal[meal]; if(!items?.length) return;
+      const mT = items.reduce((s,i)=>s+i.calories,0);
+      html += `<div class="meal-h"><span>${mealL[meal]||meal}</span><span style="color:var(--accent)">${Math.round(mT)} kcal</span></div>`;
+      items.forEach(i => {
+        html += `<div class="li"><div class="lic">🍽️</div><div style="flex:1;min-width:0"><div class="lin">${i.food_name}</div><div class="lim">${Math.round(i.grams)}g · P:${Math.round(i.protein||0)}g C:${Math.round(i.carbs||0)}g G:${Math.round(i.fat||0)}g</div></div><div class="lical">${Math.round(i.calories)} kcal</div><button class="ldel" onclick="delNut(${i.id})">✕</button></div>`;
+      });
+    });
+  }
+  const el = document.getElementById('nut-content'); if(el) el.innerHTML = html;
+}
+
+async function openAddFood() {
+  let recent = []; try { recent = await api('/nutrition/foods/recent'); } catch(e){}
+  openModal(`
+    <div class="tabs" id="meal-tabs">
+      ${['desayuno','almuerzo','cena','snack'].map(m=>`<button class="tab ${m===selMeal?'active':''}" onclick="selMealTab('${m}',this)">${{desayuno:'🌅 Desayuno',almuerzo:'☀️ Almuerzo',cena:'🌙 Cena',snack:'🍎 Snack'}[m]}</button>`).join('')}
+    </div>
+    <div class="tabs" id="cat-tabs" style="padding-bottom:6px">
+      <button class="tab active" onclick="switchFoodCat('',this)">Todo</button>
+      <button class="tab" onclick="switchFoodCat('platos',this)">🍲 Platos</button>
+      <button class="tab" onclick="switchFoodCat('proteínas',this)">🥩 Proteínas</button>
+      <button class="tab" onclick="switchFoodCat('cereales',this)">🌾 Cereales</button>
+      <button class="tab" onclick="switchFoodCat('frutas',this)">🍎 Frutas</button>
+      <button class="tab" onclick="switchFoodCat('verduras',this)">🥦 Verduras</button>
+      <button class="tab" onclick="switchFoodCat('lácteos',this)">🥛 Lácteos</button>
+      <button class="tab" onclick="switchFoodCat('grasas',this)">🥑 Grasas</button>
+      <button class="tab" onclick="switchFoodCat('snacks',this)">🍫 Snacks</button>
+      <button class="tab" onclick="switchFoodCat('bebidas',this)">☕ Bebidas</button>
+      <button class="tab" onclick="switchFoodCat('suplementos',this)">💊 Suplementos</button>
+    </div>
+    <div class="fg"><input class="fi" id="fsearch" placeholder="🔍 Buscar alimento o plato..." oninput="doFoodSearch(this.value)"></div>
+    <div id="food-results" style="background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;max-height:240px;overflow-y:auto">
+      ${recent.length ? recent.map(f=>foodRow(f)).join('') : ''}
+    </div>
+    <div id="food-sel-section" style="display:none">
+      <div style="padding:8px 0 4px;font-size:13px;font-weight:700;color:var(--accent)" id="food-sel-label"></div>
+      <div id="food-dish-note" style="display:none;font-size:11px;color:var(--teal);padding:4px 0 8px;line-height:1.5"></div>
+      <div class="fg"><label class="fl">Cantidad (gramos)</label>
+        <div class="num-row"><button class="num-btn" onclick="adjustNum('fgrams',-10,1);updateFoodPreview()">−</button><input class="fi" type="number" id="fgrams" value="100" min="1" style="text-align:center;font-size:18px;font-weight:700" oninput="updateFoodPreview()"><button class="num-btn" onclick="adjustNum('fgrams',10);updateFoodPreview()">+</button></div>
+        <div id="serving-hint" style="font-size:10px;color:var(--text2);margin-top:4px"></div>
+      </div>
+      <div id="food-preview" style="background:var(--bg3);border-radius:var(--rs);padding:10px;margin-bottom:12px;font-size:12px"></div>
+      <button class="btn btn-p btn-f" onclick="saveFoodLog()">✅ Agregar</button>
+    </div>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">¿No encuentras el alimento? Ingrésalo manualmente:</div>
+      <div class="fg"><input class="fi" id="cf-name" placeholder="Nombre del alimento o plato"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div><div class="fl">Kcal</div><input class="fi" type="number" id="cf-cal" placeholder="400"></div>
+        <div><div class="fl">Prot (g)</div><input class="fi" type="number" id="cf-prot" placeholder="20"></div>
+        <div><div class="fl">Gramos</div><input class="fi" type="number" id="cf-g" placeholder="200"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-g" style="flex:1" onclick="saveCustomFood(false)">Agregar</button>
+        <button class="btn btn-p" style="flex:1" onclick="saveCustomFood(true)">💾 Guardar en BD</button>
+      </div>
+    </div>
+  `, '🍽️ Agregar comida');
+  if(!recent.length) doFoodSearch('');
+}
+
+let curFoodCat = '';
+function switchFoodCat(cat, el) {
+  curFoodCat = cat;
+  document.querySelectorAll('#cat-tabs .tab').forEach(b=>b.classList.remove('active')); el.classList.add('active');
+  doFoodSearch(document.getElementById('fsearch')?.value||'');
+}
+function selMealTab(m, el) { selMeal=m; document.querySelectorAll('#meal-tabs .tab').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
+function doFoodSearch(q) {
+  clearTimeout(foodSearchTm);
+  foodSearchTm = setTimeout(async () => {
+    const r = await api(`/nutrition/foods/search?q=${encodeURIComponent(q)}&category=${encodeURIComponent(curFoodCat)}`);
+    const c = document.getElementById('food-results'); if(!c) return;
+    c.innerHTML = r.length ? r.slice(0,18).map(f=>foodRow(f)).join('') : '<div style="padding:14px;text-align:center;font-size:12px;color:var(--text2)">Sin resultados</div>';
+  }, 220);
+}
+function foodRow(f) {
+  const g = f.default_serving_g||100;
+  const cal = Math.round((f.calories_per_100g||0)*g/100);
+  const isDish = f.category==='platos';
+  return `<div class="fi2" onclick="selectFood(${f.id||f.food_id},'${(f.name||f.food_name).replace(/'/g,"\\'")}',${f.calories_per_100g||0},${f.protein_per_100g||0},${f.carbs_per_100g||0},${f.fat_per_100g||0},${g},'${(f.default_serving_label||'100g').replace(/'/g,"\\'")}','${(f.calorie_note||'').replace(/'/g,"\\'")}')">
+    <div><div class="fn">${isDish?'🍲 ':''}${f.name||f.food_name}</div><div class="fu">${f.default_serving_label||'100g'}</div>${f.calorie_note?`<div class="fnote">ℹ ${f.calorie_note}</div>`:''}</div>
+    <div style="text-align:right"><div class="fca">${cal} kcal</div><div class="fp">P:${Math.round(f.protein_per_100g||0)} C:${Math.round(f.carbs_per_100g||0)} G:${Math.round(f.fat_per_100g||0)}</div></div>
+  </div>`;
+}
+function selectFood(id,name,cal100,prot100,carb100,fat100,servG,servL,note) {
+  selFoodId=id; selFoodData={name,cal100,prot100,carb100,fat100,servG,servL,note};
+  document.getElementById('food-sel-section').style.display='block';
+  document.getElementById('food-sel-label').textContent='✓ '+name;
+  document.getElementById('food-results').style.display='none';
+  document.getElementById('fgrams').value=servG;
+  document.getElementById('serving-hint').textContent=`Porción sugerida: ${servL}`;
+  const noteEl = document.getElementById('food-dish-note');
+  if(note && noteEl) { noteEl.style.display='block'; noteEl.textContent='ℹ️ '+note; }
+  updateFoodPreview();
+}
+function updateFoodPreview() {
+  if(!selFoodData) return;
+  const g=parseFloat(document.getElementById('fgrams')?.value)||100, r=g/100, f=selFoodData;
+  const pEl = document.getElementById('food-preview');
+  if(pEl) pEl.innerHTML=`<span style="color:var(--accent);font-size:16px;font-weight:800">${Math.round(f.cal100*r)} kcal</span> · Prot: ${(f.prot100*r).toFixed(1)}g · Carbs: ${(f.carb100*r).toFixed(1)}g · Grasa: ${(f.fat100*r).toFixed(1)}g`;
+}
+async function saveFoodLog() {
+  if(!selFoodId) return toast('Selecciona un alimento');
+  await api('/nutrition/log',{method:'POST',body:JSON.stringify({food_id:selFoodId,grams:parseFloat(document.getElementById('fgrams').value)||100,meal_type:selMeal,date:todayStr})});
+  closeModal(); toast('✅ Registrado'); await loadNutrition();
+}
+async function saveCustomFood(save) {
+  const name=document.getElementById('cf-name').value.trim();
+  const cal=parseFloat(document.getElementById('cf-cal').value)||0;
+  const prot=parseFloat(document.getElementById('cf-prot').value)||0;
+  const g=parseFloat(document.getElementById('cf-g').value)||100;
+  if(!name) return toast('Ingresa el nombre');
+  await api('/nutrition/log/custom',{method:'POST',body:JSON.stringify({food_name:name,calories:cal,protein:prot,carbs:0,fat:0,grams:g,meal_type:selMeal,date:todayStr,save_food:save})});
+  closeModal(); toast(save?'✅ Guardado en tu base de datos':'✅ Registrado'); await loadNutrition();
+}
+async function delNut(id) { await api('/nutrition/log/'+id,{method:'DELETE'}); toast('Eliminado'); await loadNutrition(); }
+
+// ── GYM ──────────────────────────────────────────────────────────────────────
+const MG_COLORS = ['#6c63ff','#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7','#14b8a6','#f97316'];
+const MUSCLE_GROUPS_PRESETS = ['Pecho','Espalda','Hombros','Bíceps','Tríceps','Piernas','Glúteos','Core/Abdomen','Pantorrillas','Cardio'];
+const EXERCISES_PRESETS = {
+  'Pecho': ['Press banca plano','Press banca inclinado','Press banca declinado','Aperturas con mancuernas','Fondos en paralelas','Crossover en polea','Pull-over'],
+  'Espalda': ['Dominadas','Remo con barra','Remo con mancuerna','Jalones en polea','Remo en máquina','Peso muerto','Hiperextensiones'],
+  'Hombros': ['Press militar','Elevaciones laterales','Elevaciones frontales','Pájaros','Face pull','Press Arnold','Encogimientos'],
+  'Bíceps': ['Curl con barra','Curl con mancuernas','Curl martillo','Curl en banco Scott','Curl concentrado','Curl en polea'],
+  'Tríceps': ['Press francés','Fondos','Extensión en polea','Patada de tríceps','Press cerrado','Dips en banco'],
+  'Piernas': ['Sentadilla','Prensa de piernas','Estocadas','Extensión de cuádriceps','Curl femoral','Peso muerto rumano','Sentadilla búlgara'],
+  'Glúteos': ['Hip thrust','Patada de glúteo','Sentadilla sumo','Abducción en máquina','Step up','Puente de glúteo'],
+  'Core/Abdomen': ['Plancha','Crunch','Elevación de piernas','Russian twist','Mountain climbers','Ab wheel','Crunch en polea'],
+  'Pantorrillas': ['Elevación de talones de pie','Elevación de talones sentado','Gemelos en prensa'],
+  'Cardio': ['Cinta de correr','Bicicleta estática','Elíptica','Remo ergómetro','Cuerda para saltar']
+};
+
+async function renderGym() {
+  const p = document.getElementById('page-gym');
+  p.innerHTML = `<div class="ph"><div class="pt">Mis Rutinas</div><div class="ps">Gym & entrenamiento</div></div><div id="gym-content"><div class="empty"><div>⏳</div></div></div><button class="fab" onclick="openRoutineBuilder()">+</button>`;
+  await loadGym();
+}
+
+async function loadGym() {
+  const routines = await api('/gym/routines');
+  const el = document.getElementById('gym-content'); if(!el) return;
+  if(!routines.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-i">🏋️</div><div class="empty-t">Sin rutinas aún</div><div class="empty-s">Toca + para crear tu primera rutina de gimnasio con grupos musculares y ejercicios</div></div>`; return;
+  }
+  el.innerHTML = routines.map(r => routineCardHtml(r)).join('');
+}
+
+function routineCardHtml(r) {
+  const groups = r.muscle_groups || [];
+  const groupsHtml = groups.map(g => {
+    const exHtml = (g.exercises||[]).map(e => `
+      <div class="ex-row">
+        <div class="ex-name">${e.name}</div>
+        <div class="ex-sets">${e.sets}×${e.reps}</div>
+        ${e.weight?`<div class="ex-weight">${e.weight}</div>`:''}
+      </div>`).join('');
+    return `<div class="mg-section">
+      <div class="mg-header"><div class="mg-dot" style="background:${g.color||'#6c63ff'}"></div><div class="mg-name">${g.name}</div><div style="font-size:10px;color:var(--text2);margin-left:auto">${(g.exercises||[]).length} ejercicios</div></div>
+      ${exHtml}
+    </div>`;
+  }).join('');
+  return `<div class="routine-card">
+    <div class="routine-header" onclick="toggleRoutineCard(${r.id})">
+      <div>
+        <div class="routine-title">${r.name}</div>
+        <div class="routine-meta">${groups.length} grupos · ${r.total_exercises} ejercicios · ~${r.estimated_duration} min</div>
+      </div>
+      <div class="routine-actions">
+        <button class="btn btn-g btn-sm" onclick="event.stopPropagation();addRoutineToCalendar(${r.id},'${r.name.replace(/'/g,"\\'")}',${r.estimated_duration||60})">📅</button>
+        <button class="btn btn-g btn-sm" onclick="event.stopPropagation();editRoutine(${r.id})">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="event.stopPropagation();deleteRoutine(${r.id})">🗑</button>
+      </div>
+    </div>
+    <div id="routine-body-${r.id}" style="display:none">${groupsHtml}</div>
+  </div>`;
+}
+
+function toggleRoutineCard(id) {
+  const el = document.getElementById('routine-body-'+id);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+async function addRoutineToCalendar(routineId, routineName, duration) {
+  openModal(`
+    <div style="font-size:14px;font-weight:600;margin-bottom:14px">📅 Añadir "${routineName}" al calendario</div>
+    <div class="fg"><label class="fl">Fecha</label><input class="fi" type="date" id="rt-date" value="${calSelDate}"></div>
+    <div class="fg"><label class="fl">Duración (min)</label>
+      <div class="num-row"><button class="num-btn" onclick="adjustNum('rt-dur',-5,5)">−</button><input class="fi" type="number" id="rt-dur" value="${duration}" style="text-align:center;font-size:18px;font-weight:700"><button class="num-btn" onclick="adjustNum('rt-dur',5)">+</button></div>
+    </div>
+    <div class="fg"><label class="fl">¿Se repite semanalmente?</label>
+      <div class="chips" id="rt-rec-chips">
+        <button class="chip sel" data-v="none" onclick="selectChip('rt-rec-chips',this);document.getElementById('rt-days-wrap').style.display='none'">No</button>
+        <button class="chip" data-v="weekly" onclick="selectChip('rt-rec-chips',this);document.getElementById('rt-days-wrap').style.display='block'">Sí, cada semana</button>
+      </div>
+    </div>
+    <div id="rt-days-wrap" style="display:none" class="fg"><label class="fl">¿Qué días?</label>
+      <div class="chips" id="rt-day-chips">
+        ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((d,i)=>`<button class="chip" onclick="this.classList.toggle('sel')" data-v="${i}">${d}</button>`).join('')}
+      </div>
+    </div>
+    <button class="btn btn-p btn-f" onclick="confirmAddRoutineCal(${routineId},'${routineName.replace(/'/g,"\\'")}')">📅 Agregar al calendario</button>
+  `, '📅 Al calendario');
+}
+
+async function confirmAddRoutineCal(routineId, routineName) {
+  const date = document.getElementById('rt-date').value;
+  const dur = parseInt(document.getElementById('rt-dur').value)||60;
+  const rec = document.querySelector('#rt-rec-chips .chip.sel')?.dataset?.v||'none';
+  const recDays = [...document.querySelectorAll('#rt-day-chips .chip.sel')].map(b=>b.dataset.v).join(',');
+  await api('/calendar/events', {method:'POST', body:JSON.stringify({
+    date, title: routineName, type:'gym',
+    activity_name:'pesas', duration_minutes:dur,
+    color:'#6c63ff', notes:'', routine_id:routineId,
+    recurring:rec, recurring_days:recDays
+  })});
+  closeModal(); toast('✅ Rutina añadida al calendario');
+}
+
+async function deleteRoutine(id) {
+  if(!confirm('¿Eliminar esta rutina?')) return;
+  await api('/gym/routines/'+id, {method:'DELETE'});
+  toast('Eliminada'); await loadGym();
+}
+
+// ── ROUTINE BUILDER ──────────────────────────────────────────────────────────
+async function editRoutine(id) {
+  const r = await api('/gym/routines/'+id);
+  editRoutineId = id;
+  builderGroups = JSON.parse(JSON.stringify(r.muscle_groups || []));
+  openRoutineBuilderWith(r.name, r.description||'', r.estimated_duration||60);
+}
+
+function openRoutineBuilder() {
+  editRoutineId = null;
+  builderGroups = [];
+  openRoutineBuilderWith('','',60);
+}
+
+function openRoutineBuilderWith(name, desc, dur) {
+  openModal(`
+    <div class="fg"><label class="fl">Nombre de la rutina</label><input class="fi" id="rt-name" value="${name}" placeholder="ej: Push Day, Full Body, Piernas/Glúteos..."></div>
+    <div class="fg"><label class="fl">Duración estimada (min)</label>
+      <div class="num-row"><button class="num-btn" onclick="adjustNum('rt-dur-b',-5,15)">−</button><input class="fi" type="number" id="rt-dur-b" value="${dur}" style="text-align:center;font-size:18px;font-weight:700"><button class="num-btn" onclick="adjustNum('rt-dur-b',5)">+</button></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Grupos musculares</div>
+      <button class="btn btn-p btn-sm" onclick="addMuscleGroup()">+ Grupo</button>
+    </div>
+    <div id="builder-groups"></div>
+    <button class="btn btn-p btn-f" style="margin-top:8px" onclick="saveRoutine()">💾 Guardar rutina</button>
+  `, editRoutineId ? '✏️ Editar rutina' : '🏋️ Nueva rutina');
+  renderBuilderGroups();
+}
+
+function renderBuilderGroups() {
+  const c = document.getElementById('builder-groups'); if(!c) return;
+  if(!builderGroups.length) {
+    c.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text2);font-size:12px">Toca "+ Grupo" para agregar un grupo muscular (ej: Pecho, Espalda, Piernas...)</div>`;
+    return;
+  }
+  c.innerHTML = builderGroups.map((g, gi) => {
+    const presets = EXERCISES_PRESETS[g.name] || [];
+    const exRows = g.exercises.map((e, ei) => `
+      <div class="ex-builder" id="ex-${gi}-${ei}">
+        <div class="ex-builder-row">
+          <input class="fi" style="flex:2;font-size:13px" placeholder="Nombre del ejercicio" value="${e.name}" onchange="builderGroups[${gi}].exercises[${ei}].name=this.value">
+          <button class="btn btn-d btn-sm" style="flex-shrink:0" onclick="removeExercise(${gi},${ei})">✕</button>
+        </div>
+        <div class="ex-builder-row">
+          <div style="flex:1"><div class="fl">Series</div><input class="fi" type="number" min="1" max="20" value="${e.sets||3}" style="text-align:center" onchange="builderGroups[${gi}].exercises[${ei}].sets=parseInt(this.value)||3"></div>
+          <div style="flex:1"><div class="fl">Reps</div><input class="fi" value="${e.reps||'10'}" placeholder="10 / 8-12 / AMRAP" onchange="builderGroups[${gi}].exercises[${ei}].reps=this.value"></div>
+          <div style="flex:1"><div class="fl">Peso</div><input class="fi" value="${e.weight||''}" placeholder="60kg / corporal" onchange="builderGroups[${gi}].exercises[${ei}].weight=this.value"></div>
+        </div>
+      </div>`).join('');
+    const presetsHtml = presets.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${presets.map(p=>`<button class="chip" style="font-size:10px" onclick="addPresetExercise(${gi},'${p}')">${p}</button>`).join('')}</div>` : '';
+    return `<div class="mg-builder">
+      <div class="mg-builder-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:14px;height:14px;border-radius:50%;background:${g.color};flex-shrink:0"></div>
+          <input class="fi" style="font-size:14px;font-weight:700;background:transparent;border:none;padding:0;border-bottom:1px solid var(--border);border-radius:0" value="${g.name}" onchange="builderGroups[${gi}].name=this.value">
+        </div>
+        <button class="btn btn-d btn-sm" onclick="removeMuscleGroup(${gi})">✕ Grupo</button>
+      </div>
+      ${presetsHtml}
+      ${exRows}
+      <button class="btn btn-g btn-f btn-sm" style="margin-top:6px" onclick="addExercise(${gi})">+ Ejercicio</button>
+    </div>`;
+  }).join('');
+}
+
+function addMuscleGroup() {
+  const colorIdx = builderGroups.length % MG_COLORS.length;
+  builderGroups.push({ name: 'Grupo ' + (builderGroups.length+1), color: MG_COLORS[colorIdx], exercises: [] });
+  renderBuilderGroups();
+  // Scroll to last group
+  setTimeout(()=>{ const gs=document.querySelectorAll('.mg-builder'); if(gs.length) gs[gs.length-1].scrollIntoView({behavior:'smooth'}); },100);
+}
+
+function removeMuscleGroup(gi) {
+  builderGroups.splice(gi, 1);
+  renderBuilderGroups();
+}
+
+function addExercise(gi) {
+  if(!builderGroups[gi]) return;
+  builderGroups[gi].exercises.push({ name:'', sets:3, reps:'10', weight:'', rest_seconds:90, notes:'' });
+  renderBuilderGroups();
+}
+
+function addPresetExercise(gi, name) {
+  if(!builderGroups[gi]) return;
+  builderGroups[gi].exercises.push({ name, sets:3, reps:'10', weight:'', rest_seconds:90, notes:'' });
+  renderBuilderGroups();
+}
+
+function removeExercise(gi, ei) {
+  builderGroups[gi].exercises.splice(ei, 1);
+  renderBuilderGroups();
+}
+
+async function saveRoutine() {
+  const name = document.getElementById('rt-name')?.value?.trim();
+  if(!name) return toast('Ingresa un nombre para la rutina');
+  if(!builderGroups.length) return toast('Agrega al menos un grupo muscular');
+  const dur = parseInt(document.getElementById('rt-dur-b')?.value)||60;
+  // sync any unsaved input values from DOM
+  builderGroups.forEach((g, gi) => {
+    g.exercises.forEach((e, ei) => {
+      const nameEl = document.querySelector(`#ex-${gi}-${ei} input`);
+      if(nameEl) e.name = nameEl.value;
+    });
+  });
+  const payload = { name, estimated_duration: dur, muscle_groups: builderGroups };
+  if(editRoutineId) {
+    await api('/gym/routines/'+editRoutineId, {method:'PUT', body:JSON.stringify(payload)});
+    toast('✅ Rutina actualizada');
+  } else {
+    await api('/gym/routines', {method:'POST', body:JSON.stringify(payload)});
+    toast('✅ Rutina creada');
+  }
+  closeModal(); await loadGym();
+}
+
+// ── HABITS ───────────────────────────────────────────────────────────────────
+async function renderHabits() {
+  const p = document.getElementById('page-habits');
+  p.innerHTML = `<div class="ph"><div class="pt">Hábitos</div><div class="ps">${fmtDate(todayStr)}</div></div><div id="habits-list"><div class="empty"><div>⏳</div></div></div><button class="fab" onclick="openAddHabit()">+</button>`;
+  await loadHabits();
+}
+async function loadHabits() {
+  const logs = await api('/habits/logs/'+todayStr);
+  const el = document.getElementById('habits-list'); if(!el) return;
+  if(!logs.length) { el.innerHTML='<div class="empty"><div class="empty-i">🌱</div><div class="empty-t">Sin hábitos</div><div class="empty-s">Toca + para crear tu primer hábito</div></div>'; return; }
+  const cats={}; logs.forEach(h=>{if(!cats[h.category])cats[h.category]=[];cats[h.category].push(h);});
+  const ce={salud:'c-s',deporte:'c-d',productividad:'c-p','hábitos':'c-h'};
+  const ci={salud:'💚',deporte:'🏃',productividad:'🧠','hábitos':'⭐'};
+  let html='';
+  for(const[cat,items]of Object.entries(cats)){
+    html+=`<div class="sec-label">${ci[cat]||'•'} ${cat}</div>`;
+    items.forEach(h=>{
+      const done=h.completed, pct=Math.min(100,Math.round((h.value||0)/h.target_value*100));
+      html+=`<div class="hi"><button class="hck ${done?'done':''}" onclick="toggleHabit(${h.id},${h.target_value},${done?0:h.target_value})">${done?'✓':''}</button><div style="flex:1;min-width:0"><div class="lin" style="${done?'text-decoration:line-through;color:var(--text2)':''}">${h.name}</div><div class="lim">${h.value||0}/${h.target_value} ${h.unit}${h.value>0&&!done?' · '+pct+'%':''}</div></div><div style="display:flex;align-items:center;gap:6px"><span class="hcat ${ce[h.category]||'c-h'}">${cat}</span><button class="btn btn-g btn-sm" style="padding:4px 8px;font-size:11px" onclick="logHabitValue(${h.id},${h.target_value},${h.value||0})">+</button><button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px" onclick="delHabit(${h.id},'${h.name}')">🗑</button></div></div>`;
+    });
+  }
+  el.innerHTML=html;
+}
+async function toggleHabit(id,target,val){await api('/habits/'+id+'/log',{method:'POST',body:JSON.stringify({value:val,date:todayStr})});await loadHabits();}
+function logHabitValue(id,target,cur){openModal(`<div class="fg"><label class="fl">Valor actual</label><div class="num-row"><button class="num-btn" onclick="adjustNum('hv',-1)">−</button><input class="fi" type="number" id="hv" value="${cur}" style="text-align:center;font-size:20px;font-weight:700"><button class="num-btn" onclick="adjustNum('hv',1)">+</button></div><div style="font-size:10px;color:var(--text2);margin-top:5px">Meta: ${target}</div></div><button class="btn btn-p btn-f" onclick="saveHV(${id})">Guardar</button>`,'Registrar');}
+async function saveHV(id){await api('/habits/'+id+'/log',{method:'POST',body:JSON.stringify({value:parseFloat(document.getElementById('hv').value)||0,date:todayStr})});closeModal();await loadHabits();toast('✅ Registrado');}
+function openAddHabit(){openModal(`<div class="fg"><label class="fl">Nombre</label><input class="fi" id="hn" placeholder="ej: Beber agua"></div><div class="fg"><label class="fl">Categoría</label><div class="chips" id="hcat">${['salud','deporte','productividad','hábitos'].map((c,i)=>`<button class="chip ${i===0?'sel':''}" onclick="selectChip('hcat',this)">${c}</button>`).join('')}</div></div><div class="fg"><label class="fl">Meta diaria</label><div class="num-row"><button class="num-btn" onclick="adjustNum('ht',-1)">−</button><input class="fi" type="number" id="ht" value="1" style="text-align:center"><button class="num-btn" onclick="adjustNum('ht',1)">+</button></div></div><div class="fg"><label class="fl">Unidad</label><input class="fi" id="hu" placeholder="vasos, minutos, veces..."></div><button class="btn btn-p btn-f" onclick="saveHabit()">Agregar</button>`,'🌱 Nuevo hábito');}
+async function saveHabit(){const name=document.getElementById('hn').value.trim();if(!name)return toast('Ingresa un nombre');await api('/habits/',{method:'POST',body:JSON.stringify({name,category:document.querySelector('#hcat .chip.sel').textContent,target_value:parseFloat(document.getElementById('ht').value)||1,unit:document.getElementById('hu').value||'veces'})});closeModal();toast('✅ Hábito creado');await loadHabits();}
+async function delHabit(id,name){openModal(`<div style="text-align:center;padding:10px 0 18px"><div style="font-size:22px;margin-bottom:10px">🗑️</div><div style="font-size:14px;font-weight:600">¿Eliminar "${name}"?</div></div><div style="display:flex;gap:8px"><button class="btn btn-g btn-f" onclick="closeModal()">Cancelar</button><button class="btn btn-d btn-f" onclick="confirmDelHabit(${id})">Eliminar</button></div>`,'Confirmar');}
+async function confirmDelHabit(id){await api('/habits/'+id,{method:'DELETE'});closeModal();toast('Eliminado');await loadHabits();}
+
+// ── PWA ──────────────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderHome();
+</script>
+</body>
+</html>
